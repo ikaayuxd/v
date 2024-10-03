@@ -21,8 +21,26 @@ async def send_messages():
                 # Get the message object
                 message = await client.get_messages(chat_entity, ids=message_id)
 
-                # Get the InputMessage object for forwarding
-                input_message = client.get_input_entity(message)
+                # Create the InputMessage object for forwarding
+                input_message = types.InputMessage(
+                    peer=chat_entity, # The channel/group where the message is from
+                    id=message_id, # The message ID
+                    message=message.message, # The message text
+                    entities=message.entities, # Any entities (e.g., links, hashtags)
+                    reply_to_msg_id=message.reply_to_msg_id, # If it's a reply
+                )
+
+                # Handle media separately
+                if message.media:
+                    if isinstance(message.media, types.MessageMediaPhoto):
+                        input_message.media = types.InputMediaPhoto(message.media.photo) 
+                    elif isinstance(message.media, types.MessageMediaDocument):
+                        input_message.media = types.InputMediaDocument(message.media.document)
+                    elif isinstance(message.media, types.MessageMediaVideo):
+                        input_message.media = types.InputMediaVideo(message.media.video)
+                    # Add more conditions for other media types as needed
+                    else:
+                        input_message.media = message.media 
 
             except Exception as e:
                 logging.error(f"Error getting message from link: {e}")
@@ -30,25 +48,13 @@ async def send_messages():
 
             # Forward the message (handling media and text separately)
             try:
-                if message.media: # Check if the message has media
-                    if isinstance(message.media, types.MessageMediaPhoto):
-                        await client.send_file(channel_id, message.media.photo, caption=message.text)
-                    elif isinstance(message.media, types.MessageMediaDocument):
-                        await client.send_file(channel_id, message.media.document, caption=message.text)
-                    elif isinstance(message.media, types.MessageMediaVideo):
-                        await client.send_file(channel_id, message.media.video, caption=message.text)
-                    # Add more conditions for other media types as needed
-                    else:
-                        await client.send_message(channel_id, message.text, file=message.media) # For other media types
-                else: # If the message doesn't have media
-                    await client.send_message(channel_id, message.text) # Just send the text
-
+                await client.send_message(channel_id, input_message) # Send with media
             except Exception as e:
                 logging.error(f"Error forwarding message: {e}")
                 continue
 
         await asyncio.sleep(DELAY) # Send a message every 30 minutes 
-        
+
 @client.on(events.NewMessage(outgoing=True, pattern='!ccancel'))
 async def handle_cancel(event):
     await event.respond('Cancelling Auto Message Forwarding...')
