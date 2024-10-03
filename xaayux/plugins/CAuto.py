@@ -77,7 +77,7 @@ async def get_group_id(event):
       
 @client.on(events.NewMessage(outgoing=True, pattern='!about'))
 async def about(event):
-    await event.edit(q, link_preview=False)
+    await event.edit(ABOUT_TXT, link_preview=False)
 
 
 @client.on(events.NewMessage(outgoing=True, pattern='!help'))
