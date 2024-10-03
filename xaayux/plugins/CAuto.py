@@ -30,20 +30,21 @@ async def forward_message(link):
     message = await client.get_messages(entity, ids=message_id)
     
     if message.media:
-        # Forward the message with media (images/videos)
-        await client.forward_messages(channel_id, message)
+        # Forward the message with media (images/videos) to all channels
+        for channel_id in channel_ids:
+            await client.forward_messages(channel_id, message)
     else:
-        # Forward the text-only message without the "Forwarded from" tag
-        await client.send_message(channel_id, message.text)
+        # Forward the text-only message without the "Forwarded from" tag to all channels
+        for channel_id in channel_ids:
+            await client.send_message(channel_id, message.text)
 
 async def send_messages():
     while True:
-        for channel_id in channel_ids:
-            link = 'https://t.me/ghjjhddh/307'  # Replace with your desired link
-            
-            # Call the function to forward the message from the link
-            await forward_message(link)
-            
+        link = 'https://t.me/ghjjhddh/307'  # Replace with your desired link
+        
+        # Call the function to forward the message from the link
+        await forward_message(link)
+        
         await asyncio.sleep(DELAY)  # Send a message every 30 minutes 
 
 with client:
