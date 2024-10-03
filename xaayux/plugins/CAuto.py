@@ -19,15 +19,27 @@ async def send_messages():
                 logging.error(f"Error getting message from link: {e}")
                 continue
 
-            # Forward the message with media
+            # Forward the message with media (handling different types)
             try:
-                await client.forward_messages(channel_id, message)
+                if message.media: # Check if the message has media
+                    if isinstance(message.media, types.MessageMediaPhoto):
+                        await client.send_file(channel_id, message.media.photo, caption=message.text)
+                    elif isinstance(message.media, types.MessageMediaDocument):
+                        await client.send_file(channel_id, message.media.document, caption=message.text)
+                    elif isinstance(message.media, types.MessageMediaVideo):
+                        await client.send_file(channel_id, message.media.video, caption=message.text)
+                    # Add more conditions for other media types as needed
+                    else:
+                        await client.send_message(channel_id, message.text, file=message.media) # For other media types
+                else: # If the message doesn't have media
+                    await client.send_message(channel_id, message.text) # Just send the text
+
             except Exception as e:
                 logging.error(f"Error forwarding message: {e}")
                 continue
 
         await asyncio.sleep(DELAY) # Send a message every 30 minutes 
-
+        
 @client.on(events.NewMessage(outgoing=True, pattern='!ccancel'))
 async def handle_cancel(event):
     await event.respond('Cancelling Auto Message Forwarding...')
