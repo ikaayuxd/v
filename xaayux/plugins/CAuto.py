@@ -20,8 +20,12 @@ async def handle_start(event):
     send_task = asyncio.create_task(send_messages())
 
 async def forward_message(link):
-    entity = await client.get_entity(link)
-    message_id = int(link.split('/')[-1])
+    # Extract the channel username and message ID from the link
+    parts = link.split('/')
+    username = parts[-2]
+    message_id = int(parts[-1])
+    
+    entity = await client.get_entity(username)
     
     message = await client.get_messages(entity, ids=message_id)
     
