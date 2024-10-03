@@ -18,7 +18,12 @@ async def send_messages():
                 # Get the entity of the channel from the link
                 chat_entity = await client.get_input_entity(chat_username)
 
+                # Get the message object
                 message = await client.get_messages(chat_entity, ids=message_id)
+
+                # Get the InputMessage object for forwarding
+                input_message = client.get_input_entity(message)
+
             except Exception as e:
                 logging.error(f"Error getting message from link: {e}")
                 continue
@@ -43,7 +48,7 @@ async def send_messages():
                 continue
 
         await asyncio.sleep(DELAY) # Send a message every 30 minutes 
-
+        
 @client.on(events.NewMessage(outgoing=True, pattern='!ccancel'))
 async def handle_cancel(event):
     await event.respond('Cancelling Auto Message Forwarding...')
