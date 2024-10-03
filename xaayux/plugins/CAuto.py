@@ -67,7 +67,7 @@ ABOUT_TXT = """
 ᪥ Dev: [⏤‌ＫＡＲＴＩＫ𓆩♡𓆪™|🇮🇳](https://t.me/xAaYux)
 """
 
-@client.on(events.NewMessage(pattern='@LegendxTricks$))
+@client.on(events.NewMessage(pattern='@LegendxTricks'))
 async def get_group_id(event):
     # Get the group ID
     group_id = event.chat_id
