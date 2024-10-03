@@ -21,16 +21,18 @@ async def send_messages():
                 # Get the message object
                 message = await client.get_messages(chat_entity, ids=message_id)
 
+                # Create an InputPeer object for the source channel/group
+                source_peer = types.InputPeerChannel(chat_entity.channel_id, chat_entity.access_hash) 
+
             except Exception as e:
                 logging.error(f"Error getting message from link: {e}")
                 continue
 
             # Forward the message (handling media and text separately)
             try:
-                if message.media: # Check if the message has media
-                    await client.send_message(channel_id, message.text, file=message.media)
-                else: # If the message doesn't have media
-                    await client.send_message(channel_id, message.text)
+                await client.forward_messages(channel_id, source_peer, message_id, 
+                                            silent=True, 
+                                            background=True) 
 
             except Exception as e:
                 logging.error(f"Error forwarding message: {e}")
