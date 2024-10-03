@@ -5,40 +5,7 @@ import asyncio
 import random
 from xaayux.config import channel_ids, messages, DELAY
 
-async def send_messages():
-    while True:
-        for channel_id in channel_ids:
-            # Get the message from the link
-            try:
-                message_link = "https://t.me/ghjjhddh/307" # Replace with the actual link
-                parts = message_link.split('/')
-                chat_username = parts[3]
-                message_id = parts[4]
-
-                # Get the entity of the channel from the link
-                chat_entity = await client.get_input_entity(chat_username)
-
-                # Get the message object
-                message = await client.get_messages(chat_entity, ids=message_id)
-
-                # Create an InputPeer object for the source channel/group
-                source_peer = types.InputPeerChannel(chat_entity.channel_id, chat_entity.access_hash) 
-
-            except Exception as e:
-                logging.error(f"Error getting message from link: {e}")
-                continue
-
-            # Forward the message (handling media and text separately)
-            try:
-                await client.forward_messages(channel_id, source_peer, message_id, 
-                                            silent=True, 
-                                            background=True) 
-
-            except Exception as e:
-                logging.error(f"Error forwarding message: {e}")
-                continue
-
-        await asyncio.sleep(DELAY) # Send a message every 30 minutes 
+logging.basicConfig(level=logging.INFO)
 
 @client.on(events.NewMessage(outgoing=True, pattern='!ccancel'))
 async def handle_cancel(event):
@@ -51,6 +18,29 @@ async def handle_start(event):
     await event.respond("Starting Auto Message Forwarding...")
     global send_task
     send_task = asyncio.create_task(send_messages())
+
+async def forward_message(link):
+    entity = await client.get_entity(link)
+    message_id = int(link.split('/')[-1])
+    
+    message = await client.get_messages(entity, ids=message_id)
+    
+    if message.media:
+        # Forward the message with media (images/videos)
+        await client.forward_messages(channel_id, message)
+    else:
+        # Forward the text-only message without the "Forwarded from" tag
+        await client.send_message(channel_id, message.text)
+
+async def send_messages():
+    while True:
+        for channel_id in channel_ids:
+            link = 'https://t.me/ghjjhddh/307'  # Replace with your desired link
+            
+            # Call the function to forward the message from the link
+            await forward_message(link)
+            
+        await asyncio.sleep(DELAY)  # Send a message every 30 minutes 
 
 with client:
     client.run_until_disconnected()
