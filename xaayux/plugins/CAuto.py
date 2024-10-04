@@ -11,24 +11,24 @@ last_sent_message_ids = {}
 logging.basicConfig(level=logging.INFO)
 
 
-   @client.on(events.NewMessage(outgoing=True)) # This will capture all messages you send
-   async def store_message_ids(event):
-       channel_id = event.to_id
-       message_id = event.message.id
-       if channel_id not in sent_messages:
-           sent_messages[channel_id] = []
-       sent_messages[channel_id].append(message_id)
+@client.on(events.NewMessage(outgoing=True)) # This will capture all messages you send
+async def store_message_ids(event):
+      channel_id = event.to_id
+      message_id = event.message.id
+      if channel_id not in sent_messages:
+         sent_messages[channel_id] = []
+      sent_messages[channel_id].append(message_id)
 
-   @client.on(events.NewMessage(outgoing=True, pattern='!clearall'))
-   async def clear_all_messages(event):
-       for channel_id, message_ids in sent_messages.items():
-           try:
-               await client.delete_messages(channel_id, message_ids)
-               time.sleep(1) # Add a small delay to avoid rate limiting
-           except Exception as e:
-               print(f"Error deleting messages in channel {channel_id}: {e}")
+@client.on(events.NewMessage(outgoing=True, pattern='!clearall'))
+async def clear_all_messages(event):
+      for channel_id, message_ids in sent_messages.items():
+         try:
+            await client.delete_messages(channel_id, message_ids)
+            time.sleep(1) # Add a small delay to avoid rate limiting
+         except Exception as e:
+            print(f"Error deleting messages in channel {channel_id}: {e}")
 
-       await event.respond('All messages deleted successfully.')
+      await event.respond('All messages deleted successfully.')
 
 
 @client.on(events.NewMessage(outgoing=True, pattern='!setlink'))
