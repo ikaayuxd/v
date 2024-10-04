@@ -33,7 +33,7 @@ async def handle_start(event):
     entity = await client.get_entity(username)
     message = await client.get_messages(entity, ids=message_id)
 
-    # Send messages and store message IDs for all channels
+    # Send messages to all channels
     for channel_id in channel_ids:
         try:
             if message.media:
@@ -52,14 +52,12 @@ async def handle_start(event):
         except Exception as e:
             print(f"Error sending message to channel {channel_id}: {e}")
 
-    # Delete previous messages for each channel
+    # Delete previous messages for each channel AFTER sending is complete
     for channel_id in channel_ids:
         if channel_id in last_sent_message_ids and last_sent_message_ids[channel_id]:
             try:
-                # Get the previous message ID
-                previous_message_id = last_sent_message_ids[channel_id]
                 # Delete the previous message (use previous_message_id)
-                await client.delete_messages(channel_id, [previous_message_id])
+                await client.delete_messages(channel_id, [last_sent_message_ids[channel_id]])
                 time.sleep(1) # Wait for a short delay before moving to the next channel
             except Exception as e:
                 print(f"Error deleting previous message in channel {channel_id}: {e}")
@@ -67,6 +65,7 @@ async def handle_start(event):
     # Clear the message IDs for all channels after successful deletion
     last_sent_message_ids.clear() 
                 
+            
 #---------------------------------------
 async def forward_message(link):
     # Extract the channel username and message ID from the link
