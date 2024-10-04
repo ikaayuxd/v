@@ -5,7 +5,7 @@ import asyncio
 import random
 from xaayux.config import channel_ids, messages, DELAY
 link = 'https://t.me/ghjjhddh/307'
-
+last_sent_message_id = None
 logging.basicConfig(level=logging.INFO)
 
 @client.on(events.NewMessage(outgoing=True, pattern='!acstop'))
@@ -22,6 +22,8 @@ async def handle_start(event):
 
 @client.on(events.NewMessage(outgoing=True, pattern='!csend'))
 async def handle_start(event):
+    global last_sent_message_id
+    
     await event.respond("📄Started Message Sending...\n⚙️Mode: Single ")
     parts = link.split('/')
     username = parts[-2]
@@ -34,12 +36,28 @@ async def handle_start(event):
     if message.media:
         # Send the media message without any forwarding information to all channels
         for channel_id in channel_ids:
-            await client.send_file(channel_id, message.media, caption=message.text)
+            sent_message = await client.send_file(channel_id, message.media, caption=message.text)
+            # Delete the last sent message if it exists
+            if last_sent_message_id:
+                try:
+                    await client.delete_messages(channel_id, [last_sent_message_id])
+                except Exception as e:
+                    print(f"Failed to delete previous message: {e}")
+            
+            last_sent_message_id = sent_message.id
     else:
         # Send the text-only message without any forwarding information to all channels
         for channel_id in channel_ids:
-            await client.send_message(channel_id, message.text, forward=False)
+            sent_message = await client.send_message(channel_id, message.text, forward=False)
+            # Delete the last sent message if it exists
+            if last_sent_message_id:
+                try:
+                    await client.delete_messages(channel_id, [last_sent_message_id])
+                except Exception as e:
+                    print(f"Failed to delete previous message: {e}")
             
+            last_sent_message_id = sent_message.id
+
 async def send_messages():
     while True:
         # Call the function to forward the message from the link
