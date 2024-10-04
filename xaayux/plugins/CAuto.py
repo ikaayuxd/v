@@ -20,6 +20,9 @@ async def handle_start(event):
     global send_task
     send_task = asyncio.create_task(send_messages())
 
+# ===================================
+
+
 @client.on(events.NewMessage(outgoing=True, pattern='!csend'))
 async def handle_start(event):
     global last_sent_message_id
@@ -37,6 +40,7 @@ async def handle_start(event):
         # Send the media message without any forwarding information to all channels
         for channel_id in channel_ids:
             sent_message = await client.send_file(channel_id, message.media, caption=message.text)
+            
             # Delete the last sent message if it exists
             if last_sent_message_id:
                 try:
@@ -49,6 +53,7 @@ async def handle_start(event):
         # Send the text-only message without any forwarding information to all channels
         for channel_id in channel_ids:
             sent_message = await client.send_message(channel_id, message.text, forward=False)
+            
             # Delete the last sent message if it exists
             if last_sent_message_id:
                 try:
