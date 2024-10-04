@@ -11,26 +11,35 @@ last_sent_message_ids = {}
 logging.basicConfig(level=logging.INFO)
 
 
-@client.on(events.NewMessage(outgoing=True)) # This will capture all messages you send
+@client.on(events.NewMessage(outgoing=True)) 
 async def store_message_ids(event):
-      channel_id = event.to_id
-      message_id = event.message.id
-      if channel_id not in sent_messages:
-         sent_messages[channel_id] = []
-      sent_messages[channel_id].append(message_id)
+    channel_id = event.to_id
+    message_id = event.message.id
+
+    # Check the type of the entity
+    if isinstance(channel_id, int): # If it's a user ID
+        channel_id = channel_id 
+    elif isinstance(channel_id, PeerChannel): # If it's a channel
+        channel_id = channel_id.channel_id
+    elif isinstance(channel_id, PeerChat): # If it's a chat
+        channel_id = channel_id.chat_id
+
+    if channel_id not in sent_messages:
+        sent_messages[channel_id] = []
+    sent_messages[channel_id].append(message_id)
 
 @client.on(events.NewMessage(outgoing=True, pattern='!clearall'))
 async def clear_all_messages(event):
-      for channel_id, message_ids in sent_messages.items():
-         try:
+    for channel_id, message_ids in sent_messages.items():
+        try:
             await client.delete_messages(channel_id, message_ids)
-            time.sleep(1) # Add a small delay to avoid rate limiting
-         except Exception as e:
+            time.sleep(1) 
+        except Exception as e:
             print(f"Error deleting messages in channel {channel_id}: {e}")
 
-      await event.respond('All messages deleted successfully.')
+    await event.respond('All messages deleted successfully.')
 
-
+#°=======================
 @client.on(events.NewMessage(outgoing=True, pattern='!setlink'))
 async def handle_set_link(event):
     new_link = event.text.split(' ')[1] # Get the new link from the message
