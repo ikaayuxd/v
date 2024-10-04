@@ -7,18 +7,27 @@ from xaayux.config import channel_ids, messages, DELAY
 
 logging.basicConfig(level=logging.INFO)
 
-@client.on(events.NewMessage(outgoing=True, pattern='!ccancel'))
+@client.on(events.NewMessage(outgoing=True, pattern='!cstop'))
 async def handle_cancel(event):
-    await event.respond('Cancelling Auto Message Forwarding...')
+    await event.respond('Stopping Auto Message Sending...')
     global send_task
     send_task.cancel()
 
-@client.on(events.NewMessage(outgoing=True, pattern='!cstart'))
+@client.on(events.NewMessage(outgoing=True, pattern='!acsend'))
 async def handle_start(event):
-    await event.respond("Starting Auto Message Forwarding...")
+    await event.respond("Started Auto Message Sending...")
     global send_task
     send_task = asyncio.create_task(send_messages())
 
+@client.on(events.NewMessage(outgoing=True, pattern='!csend'))
+async def handle_start(event):
+    await event.respond("Started Message Sending...")
+    for channel_id in channel_ids:
+        if event.message.media:
+            await client.send_file(channel_id, file=event.message.media)
+        else:
+            await client.send_message(channel_id, event.message.message)
+            
 async def forward_message(link):
     # Extract the channel username and message ID from the link
     parts = link.split('/')
