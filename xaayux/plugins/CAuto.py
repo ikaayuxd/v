@@ -22,7 +22,6 @@ async def handle_start(event):
 
 # ===================================
 
-
 @client.on(events.NewMessage(outgoing=True, pattern='!csend'))
 async def handle_start(event):
     global last_sent_message_id
@@ -62,11 +61,6 @@ async def handle_start(event):
                     print(f"Failed to delete previous message: {e}")
             
             last_sent_message_id = sent_message.id
-
-async def send_messages():
-    while True:
-        # Call the function to forward the message from the link
-        await forward_message(link)
 
 #---------------------------------------
 async def forward_message(link):
