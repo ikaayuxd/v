@@ -23,7 +23,7 @@ async def handle_start(event):
 
 # ===================================
 
-@client.on(events.NewMessage(outgoing=True, pattern='!csend'))
+ @client.on(events.NewMessage(outgoing=True, pattern='!csend'))
 async def handle_start(event):
     await event.respond("📄Started Message Sending...\n⚙️Mode: Single ")
     parts = link.split('/')
@@ -33,37 +33,36 @@ async def handle_start(event):
     entity = await client.get_entity(username)
     message = await client.get_messages(entity, ids=message_id)
 
-    # Send messages to all channels
+    # Send messages to all channels and track previous message IDs
     for channel_id in channel_ids:
         try:
+            # Store the previous message ID for this channel
+            previous_message_id = last_sent_message_ids.get(channel_id)
+
             if message.media:
                 sent_message = await client.send_file(channel_id, message.media, caption=message.text)
             else:
                 sent_message = await client.send_message(channel_id, message.text, forward=False)
 
-            # Store the ID of the *previous* message before sending the new one
-            if channel_id in last_sent_message_ids:
-                previous_message_id = last_sent_message_ids[channel_id]
-            else:
-                previous_message_id = None
-
-            last_sent_message_ids[channel_id] = sent_message.id # Store the NEW message ID
+            # Update the message ID in the dictionary
+            last_sent_message_ids[channel_id] = sent_message.id 
             time.sleep(1) # Wait for a short delay before deleting (adjust as needed)
         except Exception as e:
             print(f"Error sending message to channel {channel_id}: {e}")
 
     # Delete previous messages for each channel AFTER sending is complete
     for channel_id in channel_ids:
-        if channel_id in last_sent_message_ids and last_sent_message_ids[channel_id]:
+        if channel_id in last_sent_message_ids:
             try:
                 # Delete the previous message (use previous_message_id)
-                await client.delete_messages(channel_id, [last_sent_message_ids[channel_id]])
+                await client.delete_messages(channel_id, [previous_message_id])
                 time.sleep(1) # Wait for a short delay before moving to the next channel
             except Exception as e:
                 print(f"Error deleting previous message in channel {channel_id}: {e}")
 
     # Clear the message IDs for all channels after successful deletion
     last_sent_message_ids.clear() 
+    
                 
             
 #---------------------------------------
