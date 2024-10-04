@@ -23,7 +23,8 @@ async def handle_start(event):
 
 # ===================================
 
- @client.on(events.NewMessage(outgoing=True, pattern='!csend'))
+
+@client.on(events.NewMessage(outgoing=True, pattern='!csend'))
 async def handle_start(event):
     await event.respond("📄Started Message Sending...\n⚙️Mode: Single ")
     parts = link.split('/')
@@ -61,7 +62,7 @@ async def handle_start(event):
                 print(f"Error deleting previous message in channel {channel_id}: {e}")
 
     # Clear the message IDs for all channels after successful deletion
-    last_sent_message_ids.clear() 
+    last_sent_message_ids.clear()  
     
                 
             
