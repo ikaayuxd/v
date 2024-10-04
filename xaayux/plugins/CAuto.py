@@ -34,10 +34,10 @@ async def forward_message(link):
         for channel_id in channel_ids:
             await client.forward_messages(channel_id, message)
     else:
-        # Forward the text-only message without the "Forwarded from" tag to all channels
+        # Send the text-only message without any forwarding information to all channels
         for channel_id in channel_ids:
             await client.send_message(channel_id, message.text)
-
+            
 async def send_messages():
     while True:
         link = 'https://t.me/ghjjhddh/307'  # Replace with your desired link
