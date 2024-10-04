@@ -5,9 +5,17 @@ import time
 import asyncio
 import random
 from xaayux.config import channel_ids, messages, DELAY
-link = 'https://t.me/ghjjhddh/307'
+
 last_sent_message_ids = {}
 logging.basicConfig(level=logging.INFO)
+
+@client.on(events.NewMessage(outgoing=True, pattern='!setlink'))
+async def handle_set_link(event):
+    new_link = event.text.split(' ')[1] # Get the new link from the message
+    global link # Access the global variable
+    link = new_link
+    await event.respond("Link updated successfully!")
+
 
 @client.on(events.NewMessage(outgoing=True, pattern='!acstop'))
 async def handle_cancel(event):
