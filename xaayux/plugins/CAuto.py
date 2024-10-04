@@ -8,9 +8,9 @@ link = 'https://t.me/ghjjhddh/307'
 
 logging.basicConfig(level=logging.INFO)
 
-@client.on(events.NewMessage(outgoing=True, pattern='!cstop'))
+@client.on(events.NewMessage(outgoing=True, pattern='!acstop'))
 async def handle_cancel(event):
-    await event.respond('Stopping Auto Message Sending...')
+    await event.respond('📄 Stopped Auto Message Sending...\n⚙️Mode: Loop/Auto')
     global send_task
     send_task.cancel()
 
