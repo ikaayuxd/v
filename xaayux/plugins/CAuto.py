@@ -25,8 +25,6 @@ async def handle_start(event):
 
 @client.on(events.NewMessage(outgoing=True, pattern='!csend'))
 async def handle_start(event):
-    global last_sent_message_ids
-
     await event.respond("📄Started Message Sending...\n⚙️Mode: Single ")
     parts = link.split('/')
     username = parts[-2]
@@ -42,19 +40,33 @@ async def handle_start(event):
                 sent_message = await client.send_file(channel_id, message.media, caption=message.text)
             else:
                 sent_message = await client.send_message(channel_id, message.text, forward=False)
-            last_sent_message_ids[channel_id] = sent_message.id
-            time.sleep(1) 
+
+            # Store the ID of the *previous* message before sending the new one
+            if channel_id in last_sent_message_ids:
+                previous_message_id = last_sent_message_ids[channel_id]
+            else:
+                previous_message_id = None
+
+            last_sent_message_ids[channel_id] = sent_message.id # Store the NEW message ID
+            time.sleep(1) # Wait for a short delay before deleting (adjust as needed)
         except Exception as e:
             print(f"Error sending message to channel {channel_id}: {e}")
 
-        # Delete previous message for the channel
-        if last_sent_message_ids.get(channel_id):
+    # Delete previous messages for each channel
+    for channel_id in channel_ids:
+        if channel_id in last_sent_message_ids and last_sent_message_ids[channel_id]:
             try:
-                await client.delete_messages(channel_id, [last_sent_message_ids[channel_id]])
-                time.sleep(1) 
+                # Get the previous message ID
+                previous_message_id = last_sent_message_ids[channel_id]
+                # Delete the previous message (use previous_message_id)
+                await client.delete_messages(channel_id, [previous_message_id])
+                time.sleep(1) # Wait for a short delay before moving to the next channel
             except Exception as e:
                 print(f"Error deleting previous message in channel {channel_id}: {e}")
 
+    # Clear the message IDs for all channels after successful deletion
+    last_sent_message_ids.clear() 
+                
 #---------------------------------------
 async def forward_message(link):
     # Extract the channel username and message ID from the link
