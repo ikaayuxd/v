@@ -30,13 +30,13 @@ async def forward_message(link):
     message = await client.get_messages(entity, ids=message_id)
     
     if message.media:
-        # Forward the message with media (images/videos) to all channels
+        # Send the media message without any forwarding information to all channels
         for channel_id in channel_ids:
-            await client.forward_messages(channel_id, message)
+            await client.send_file(channel_id, message.media, caption=message.text)
     else:
         # Send the text-only message without any forwarding information to all channels
         for channel_id in channel_ids:
-            await client.send_message(channel_id, message.text)
+            await client.send_message(channel_id, message.text, forward=False)
             
 async def send_messages():
     while True:
