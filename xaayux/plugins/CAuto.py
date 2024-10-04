@@ -5,7 +5,7 @@ import asyncio
 import random
 from xaayux.config import channel_ids, messages, DELAY
 link = 'https://t.me/ghjjhddh/307'
-last_sent_message_id = None
+last_sent_message_ids = {}
 logging.basicConfig(level=logging.INFO)
 
 @client.on(events.NewMessage(outgoing=True, pattern='!acstop'))
@@ -24,7 +24,7 @@ async def handle_start(event):
 
 @client.on(events.NewMessage(outgoing=True, pattern='!csend'))
 async def handle_start(event):
-    global last_sent_message_ids # Declare it as global inside the function
+    global last_sent_message_ids
 
     await event.respond("📄Started Message Sending...\n⚙️Mode: Single ")
     parts = link.split('/')
@@ -35,49 +35,41 @@ async def handle_start(event):
 
     message = await client.get_messages(entity, ids=message_id)
 
+    # Handle media messages
     if message.media:
-        # Send the media message without any forwarding information to all channels
         for channel_id in channel_ids:
-            # Send the message
-            sent_message = await client.send_file(channel_id, message.media, caption=message.text)
+            try:
+                # Send the media message (with a delay)
+                sent_message = await client.send_file(channel_id, message.media, caption=message.text)
+                # Wait for a short delay before deleting (adjust the delay as needed)
+                time.sleep(1) # Use time.sleep() for a more reliable delay
+                last_sent_message_ids[channel_id] = sent_message.id
+            except Exception as e:
+                print(f"Error sending media message to channel {channel_id}: {e}")
 
-            # Store the ID of the newly sent message for this channel
-            last_sent_message_ids[channel_id] = sent_message.id  
-
-            # Wait for a short delay before deleting (adjust the delay as needed)
-            await asyncio.sleep(1) 
-
-            # Delete the previous message for this channel (if it exists)
-            if channel_id in last_sent_message_ids and last_sent_message_ids[channel_id]:
-                try:
-                    await client.delete_messages(channel_id, [last_sent_message_ids[channel_id]])
-                except Exception as e:
-                    print(f"Failed to delete previous message in channel {channel_id}: {e}")
-
-            # Wait for a short delay before deleting (adjust the delay as needed)
-            await asyncio.sleep(1) 
+    # Handle text messages
     else:
-        # Send the text-only message without any forwarding information to all channels
         for channel_id in channel_ids:
-            # Send the message
-            sent_message = await client.send_message(channel_id, message.text, forward=False)
+            try:
+                # Send the text-only message (with a delay)
+                sent_message = await client.send_message(channel_id, message.text, forward=False)
+                # Wait for a short delay before deleting (adjust the delay as needed)
+                time.sleep(1) # Use time.sleep() for a more reliable delay
+                last_sent_message_ids[channel_id] = sent_message.id
+            except Exception as e:
+                print(f"Error sending text message to channel {channel_id}: {e}")
 
-            # Store the ID of the newly sent message for this channel
-            last_sent_message_ids[channel_id] = sent_message.id  
-
-            # Wait for a short delay before deleting (adjust the delay as needed)
-            await asyncio.sleep(1) 
-
-            # Delete the previous message for this channel (if it exists)
-            if channel_id in last_sent_message_ids and last_sent_message_ids[channel_id]:
-                try:
-                    await client.delete_messages(channel_id, [last_sent_message_ids[channel_id]])
-                except Exception as e:
-                    print(f"Failed to delete previous message in channel {channel_id}: {e}")
-
-            # Wait for a short delay before deleting (adjust the delay as needed)
-            await asyncio.sleep(1) 
-            
+    # Delete previous messages for each channel
+    for channel_id in channel_ids:
+        if channel_id in last_sent_message_ids and last_sent_message_ids[channel_id]:
+            try:
+                # Delete the previous message (with a delay)
+                await client.delete_messages(channel_id, [last_sent_message_ids[channel_id]])
+                # Wait for a short delay (adjust the delay as needed)
+                time.sleep(1)
+            except Exception as e:
+                print(f"Error deleting previous message in channel {channel_id}: {e}")
+                
 
 #---------------------------------------
 async def forward_message(link):
