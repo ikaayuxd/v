@@ -24,7 +24,7 @@ async def handle_start(event):
 
 @client.on(events.NewMessage(outgoing=True, pattern='!csend'))
 async def handle_start(event):
-    global last_sent_message_ids
+    global last_sent_message_ids # Declare it as global inside the function
 
     await event.respond("📄Started Message Sending...\n⚙️Mode: Single ")
     parts = link.split('/')
