@@ -45,27 +45,22 @@ async def handle_start(event):
             else:
                 sent_message = await client.send_message(channel_id, message.text, forward=False)
 
-            # Update the message ID in the dictionary (store the ID of the message we just sent)
-            last_sent_message_ids[channel_id] = sent_message.id 
-            time.sleep(1) # Wait for a short delay before deleting (adjust as needed)
-        except Exception as e:
-            print(f"Error sending message to channel {channel_id}: {e}")
-
-    # Delete previous messages for each channel AFTER sending is complete
-    for channel_id in channel_ids:
-        if channel_id in last_sent_message_ids:
-            previous_message_id = last_sent_message_ids.get(channel_id)
-            if previous_message_id is not None: # Check if previous message ID exists
+            # Delete the previous message if it exists
+            if previous_message_id is not None:
                 try:
-                    # Delete the previous message (use previous_message_id)
                     await client.delete_messages(channel_id, [previous_message_id])
-                    time.sleep(1) # Wait for a short delay before moving to the next channel
+                    time.sleep(1) # Wait before updating the message ID
                 except Exception as e:
                     print(f"Error deleting previous message in channel {channel_id}: {e}")
 
+            # Update the message ID in the dictionary AFTER deleting the previous one
+            last_sent_message_ids[channel_id] = sent_message.id 
+            time.sleep(1) # Wait for a short delay before moving to the next channel
+        except Exception as e:
+            print(f"Error sending message to channel {channel_id}: {e}")
+
     # Clear the message IDs for all channels after successful deletion
     last_sent_message_ids.clear() 
-                
             
 #---------------------------------------
 async def forward_message(link):
