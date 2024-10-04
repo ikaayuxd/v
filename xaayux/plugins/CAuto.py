@@ -63,8 +63,9 @@ async def handle_start(event):
             except Exception as e:
                 print(f"Error deleting previous message in channel {channel_id}: {e}")
 
-    # Clear the message IDs for all channels after successful deletion
-    last_sent_message_ids.clear()
+    # *Clear the message IDs only after deleting the previous messages*
+    last_sent_message_ids.clear() 
+
 
 
 #---------------------------------------
