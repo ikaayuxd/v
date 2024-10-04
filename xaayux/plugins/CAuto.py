@@ -24,7 +24,7 @@ async def handle_start(event):
 
 @client.on(events.NewMessage(outgoing=True, pattern='!csend'))
 async def handle_start(event):
-    global last_sent_message_id
+    global last_sent_message_ids
 
     await event.respond("📄Started Message Sending...\n⚙️Mode: Single ")
     parts = link.split('/')
@@ -41,47 +41,43 @@ async def handle_start(event):
             # Send the message
             sent_message = await client.send_file(channel_id, message.media, caption=message.text)
 
-            # Delete the previous message if it exists
-            if last_sent_message_id:
-                try:
-                    await client.delete_messages(channel_id, [last_sent_message_id])
-                except Exception as e:
-                    print(f"Failed to delete previous message: {e}")
+            # Store the ID of the newly sent message for this channel
+            last_sent_message_ids[channel_id] = sent_message.id  
 
             # Wait for a short delay before deleting (adjust the delay as needed)
             await asyncio.sleep(1) 
 
-        # Update last_sent_message_id to the newly sent message (after all channels)
-        last_sent_message_id = sent_message.id  
+            # Delete the previous message for this channel (if it exists)
+            if channel_id in last_sent_message_ids and last_sent_message_ids[channel_id]:
+                try:
+                    await client.delete_messages(channel_id, [last_sent_message_ids[channel_id]])
+                except Exception as e:
+                    print(f"Failed to delete previous message in channel {channel_id}: {e}")
+
+            # Wait for a short delay before deleting (adjust the delay as needed)
+            await asyncio.sleep(1) 
     else:
         # Send the text-only message without any forwarding information to all channels
         for channel_id in channel_ids:
             # Send the message
             sent_message = await client.send_message(channel_id, message.text, forward=False)
 
-            # Delete the previous message if it exists
-            if last_sent_message_id:
-                try:
-                    await client.delete_messages(channel_id, [last_sent_message_id])
-                except Exception as e:
-                    print(f"Failed to delete previous message: {e}")
+            # Store the ID of the newly sent message for this channel
+            last_sent_message_ids[channel_id] = sent_message.id  
 
             # Wait for a short delay before deleting (adjust the delay as needed)
             await asyncio.sleep(1) 
 
-        # Update last_sent_message_id to the newly sent message (after all channels)
-        last_sent_message_id = sent_message.id
+            # Delete the previous message for this channel (if it exists)
+            if channel_id in last_sent_message_ids and last_sent_message_ids[channel_id]:
+                try:
+                    await client.delete_messages(channel_id, [last_sent_message_ids[channel_id]])
+                except Exception as e:
+                    print(f"Failed to delete previous message in channel {channel_id}: {e}")
 
-    # Staggered Deletion (Add this after the 'for' loop for each message type)
-    if last_sent_message_id:
-        for channel_id in channel_ids:
-            try:
-                await client.delete_messages(channel_id, [last_sent_message_id])
-                await asyncio.sleep(0.5) # Wait for a half-second between deletions
-            except Exception as e:
-                print(f"Failed to delete previous message: {e}")
-                
-
+            # Wait for a short delay before deleting (adjust the delay as needed)
+            await asyncio.sleep(1) 
+            
 
 #---------------------------------------
 async def forward_message(link):
