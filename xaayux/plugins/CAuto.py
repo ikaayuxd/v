@@ -24,6 +24,8 @@ async def store_message_ids(event):
         channel_id = channel_id.channel_id
     elif isinstance(channel_id, PeerChat): # If it's a chat
         channel_id = channel_id.chat_id
+    elif isinstance(channel_id, PeerUser): # If it's a user, skip storing message
+        return
 
     if channel_id not in sent_messages:
         sent_messages[channel_id] = []
@@ -39,7 +41,6 @@ async def clear_all_messages(event):
             print(f"Error deleting messages in channel {channel_id}: {e}")
 
     await event.respond('All messages deleted successfully.')
-
 #°=======================
 @client.on(events.NewMessage(outgoing=True, pattern='!setlink'))
 async def handle_set_link(event):
