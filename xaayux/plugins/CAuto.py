@@ -67,7 +67,7 @@ async def send_messages():
     while True:
         # Call the function to forward the message from the link
         await forward_message(link)
-        
+
 #---------------------------------------
 async def forward_message(link):
     # Extract the channel username and message ID from the link
