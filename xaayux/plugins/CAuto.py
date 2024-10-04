@@ -37,7 +37,7 @@ async def handle_start(event):
     # Send messages to all channels and track previous message IDs
     for channel_id in channel_ids:
         try:
-            # Store the previous message ID for this channel
+            # Get the previous message ID for this channel (if any)
             previous_message_id = last_sent_message_ids.get(channel_id)
 
             if message.media:
@@ -45,7 +45,7 @@ async def handle_start(event):
             else:
                 sent_message = await client.send_message(channel_id, message.text, forward=False)
 
-            # Update the message ID in the dictionary
+            # Update the message ID in the dictionary (store the ID of the message we just sent)
             last_sent_message_ids[channel_id] = sent_message.id 
             time.sleep(1) # Wait for a short delay before deleting (adjust as needed)
         except Exception as e:
@@ -65,8 +65,6 @@ async def handle_start(event):
 
     # Clear the message IDs for all channels after successful deletion
     last_sent_message_ids.clear() 
-  
-    
                 
             
 #---------------------------------------
