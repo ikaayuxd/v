@@ -40,7 +40,9 @@ async def handle_start(event):
     if message.media:
         # Send the media message without any forwarding information to all channels
         for channel_id in channel_ids:
+            # Store the ID of the message sent in the current iteration
             sent_message = await client.send_file(channel_id, message.media, caption=message.text)
+            last_sent_message_id = sent_message.id
             
             # Delete the last sent message if it exists
             if last_sent_message_id:
@@ -48,12 +50,12 @@ async def handle_start(event):
                     await client.delete_messages(channel_id, [last_sent_message_id])
                 except Exception as e:
                     print(f"Failed to delete previous message: {e}")
-            
-            last_sent_message_id = sent_message.id
     else:
         # Send the text-only message without any forwarding information to all channels
         for channel_id in channel_ids:
+            # Store the ID of the message sent in the current iteration
             sent_message = await client.send_message(channel_id, message.text, forward=False)
+            last_sent_message_id = sent_message.id
             
             # Delete the last sent message if it exists
             if last_sent_message_id:
@@ -61,9 +63,7 @@ async def handle_start(event):
                     await client.delete_messages(channel_id, [last_sent_message_id])
                 except Exception as e:
                     print(f"Failed to delete previous message: {e}")
-            
-            last_sent_message_id = sent_message.id
-
+                    
 
 #---------------------------------------
 async def forward_message(link):
