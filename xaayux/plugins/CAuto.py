@@ -16,13 +16,13 @@ async def handle_cancel(event):
 
 @client.on(events.NewMessage(outgoing=True, pattern='!acsend'))
 async def handle_start(event):
-    await event.respond("Started Auto Message Sending...")
+    await event.respond("📄Started  Auto Message Sending...\n⚙️Mode: Loop/Auto")
     global send_task
     send_task = asyncio.create_task(send_messages())
 
 @client.on(events.NewMessage(outgoing=True, pattern='!csend'))
 async def handle_start(event):
-    await event.respond("Started Message Sending...")
+    await event.respond("📄Started Message Sending...\n⚙️Mode: Single ")
     parts = link.split('/')
     username = parts[-2]
     message_id = int(parts[-1])
