@@ -58,9 +58,6 @@ async def handle_start(event):
             time.sleep(1) # Wait for a short delay before moving to the next channel
         except Exception as e:
             print(f"Error sending message to channel {channel_id}: {e}")
-
-    # Clear the message IDs for all channels after successful deletion
-    last_sent_message_ids.clear() 
             
 #---------------------------------------
 async def forward_message(link):
