@@ -1,6 +1,7 @@
 from .. import client, DELAY
 from telethon import events, types, Button
 import logging 
+import time
 import asyncio
 import random
 from xaayux.config import channel_ids, messages, DELAY
