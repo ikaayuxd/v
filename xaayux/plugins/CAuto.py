@@ -1,5 +1,6 @@
 from .. import client, DELAY
 from telethon import events, types, Button
+from telethon.tl.types import PeerChannel, PeerChat, PeerUser 
 import logging 
 import time
 import asyncio
