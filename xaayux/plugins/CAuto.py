@@ -1,6 +1,9 @@
 from .. import client, DELAY
 from telethon import events, types, Button
 from telethon.tl.types import PeerChannel, PeerChat, PeerUser 
+from telethon import TelegramClient, events
+from telethon.tl.functions.channels import EditAdminRequest, EditBannedRequest
+from telethon.tl.types import ChannelParticipantsAdmins
 import logging 
 import time
 import asyncio
@@ -183,6 +186,54 @@ async def alive(event):
     await event.edit(f"𝗔𝘂𝘁𝗼 𝗦𝗰𝗵𝗲𝗱𝘂𝗹𝗲𝗿 𝗨𝘀𝗲𝗿𝗯𝗼𝘁 𝗜𝘀 𝗔𝗰𝘁𝗶𝘃𝗲.\n\n𝗗𝗲𝗮𝗹𝘆 𝗜𝘀 𝗦𝗲𝘁 𝗧𝗼 {DELAY}(𝗦𝗲𝗰𝗼𝗻𝗱𝘀).")
     await event.edit(f"𝗔𝘂𝘁𝗼 𝗦𝗰𝗵𝗲𝗱𝘂𝗹𝗲𝗿 𝗨𝘀𝗲𝗿𝗯𝗼𝘁 𝗜𝘀 𝗔𝗰𝘁𝗶𝘃𝗲.\n\n𝗗𝗲𝗮𝗹𝘆 𝗜𝘀 𝗦𝗲𝘁 𝗧𝗼 {DELAY}(𝗦𝗲𝗰𝗼𝗻𝗱𝘀).\n\n 💭 @LegendxTricks")
 
+
+@client.on(events.NewMessage(pattern='/addadmin (.*)'))
+async def add_admin(event):
+    """Adds an admin to a channel.
+    """
+    # Get the channel ID, username, and user ID from the command
+    args = event.pattern_match.group(1).split('/')
+    if len(args) != 2:
+        await event.reply('Invalid command format. Please use: /addadmin channelid/username userid/username')
+        return
+    channel_id = args[0]
+    target_user = args[1]
+
+    # Check if the user sending the command is an admin of the channel
+    try:
+        admins = await client.get_participants(channel_id, aggressive=True,
+                                              filter=ChannelParticipantsAdmins)
+        if not any(a.user_id == event.sender_id for a in admins) or not admins[0].admin_rights.add_admins:
+            await event.reply('You are not an admin with the permission to add admins to this channel.')
+            return
+    except Exception as e:
+        await event.reply(f'Error: {e}')
+        return
+
+    # Try to add the user as an admin
+    try:
+        await client.invoke(EditAdminRequest(channel_id, target_user,
+                                          is_admin=True, can_edit=False))
+        await event.reply('Successfully added user as admin!')
+    except Exception as e:
+        await event.reply(f'Error: {e}')
+
+@client.on(events.ChatAction)
+async def handle_chat_action(event):
+    """Handles chat actions like promotions and bans.
+    """
+    if event.action.user_id == event.sender_id and event.action.is_promoted_by:
+        # Check if the user is being promoted by the bot
+        if event.action.promoted_by.user_id == client.get_me().id:
+            # Check if the user is banned by the promoted admin
+            if await client.is_user_banned(event.chat_id, event.action.user_id):
+                # Remove the admin rights if the user is banned
+                try:
+                    await client.invoke(EditAdminRequest(event.chat_id, event.action.user_id,
+                                                      is_admin=False, can_edit=False))
+                    await event.reply(f"User {event.action.user_id} has been automatically removed from admin position due to ban.")
+                except Exception as e:
+                    await event.reply(f'Error: {e}')
 
 with client:
     client.run_until_disconnected()
